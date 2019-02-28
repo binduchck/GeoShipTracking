@@ -33,17 +33,20 @@ def insert(conn, values):
         log.error("Operation failed due to {}".format(ex))
         con.rollback()
 
-conn = create_connection("db.sqlite3")
 
-# bulk upload ship's geographical info"
+def run():
+    # bulk upload ship's geographical info"
+    conn = create_connection("db.sqlite3")
+    df = pd.read_csv(settings.POSITIONS_FILE, header=None)
+    df.columns =['id','imo_id', 'position_timestamp', 'latitude', 'longitude']
+    df.to_sql("GeoPosApp_geoinfo1", conn, if_exists='append', index=False)
 
-df = pd.read_csv(settings.POSITIONS_FILE, header=None)
-df.columns =['id','imo_id', 'position_timestamp', 'latitude', 'longitude']
-df.to_sql("GeoPosApp_geoinfo1", conn, if_exists='append', index=False)
+    #Insert ship info
+    ship_details = ((9632179, "Mathilde Maersk"), (9247455, "Australian Spirik"),
+    (9595321, "MSC Preziosa")) ##TODO  should be bulk uploaded or configured
+    insert(conn, ship_details)
 
-#Insert ship info
-ship_details = ((9632179, "Mathilde Maersk"), (9247455, "Australian Spirik"),
-(9595321, "MSC Preziosa")) ##TODO  should be bulk uploaded or configured
-insert(conn, ship_details)
+    Log.info("Inserted  rows successfuly")
 
-Log.info("Inserted  rows successfuly")
+if __name__ == "__main__":
+    run()
